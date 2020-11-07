@@ -312,7 +312,7 @@ const dataFormat = programingData => {
 
 const schedule = (processType, programingData) => {
     var convertedData = dataFormat(programingData);
-    // console.log("Converted Data:", convertedData);
+    console.log("Converted Data:", convertedData);
     var resultData = scheduling(processType, convertedData);
     // console.log("Result Data:", resultData);
 
