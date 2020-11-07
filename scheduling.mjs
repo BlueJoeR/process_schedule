@@ -2,8 +2,6 @@
  * ["FCFS", "SJF", "SRTF", "PS", "PPS", "RR"]
 */
 
-//  SJF: https://www.guru99.com/shortest-job-first-sjf-scheduling.html
-
 /* programingData
  * Data Type : String Array
  * Unit: "burst_time, arival_time, priority"
@@ -62,7 +60,71 @@ const PS_PPS = (type, data) => {
  };
 
 const SJF_SRTF = (type, data) => {
-    return [];
+     var result = [];
+
+    // Set an arrive queue for check next prcess
+    var queue = data.map((e,i) => [i,e[0],e[1]]).sort((f,b) => f[1]-b[1]).sort((f,b) => f[2]-b[2]).map(e => e[0]);
+    // console.log("Queue:", queue);
+    var queueWall = -1;
+
+     var nowProcess = -1;
+    var nowTime = 0;
+
+    var done = false;
+    while ( !done ) {
+        done = true;
+
+        var runTime = 0;
+        // Find next exercise process
+        if ( nowProcess == -1 ) {
+            if ( queueWall < queue.length-1 ) {
+                done = false;
+                // SJF
+                queue.forEach((process_index, index) => {
+                    if ( data[process_index][1] <= nowTime ) {
+                        if ( index > queueWall ) {
+                            queueWall = index;
+                        }
+                        if ( data[process_index][0] && !runTime || runTime > data[process_index][0] ) {
+                            nowProcess = process_index;
+                            runTime = data[process_index][0];
+                        }
+                    }
+                });
+                // SRTF
+                if ( type && queueWall != queue.length-1 ) {
+                    runTime = data[queue[queueWall+1]][1] - nowTime;
+                }
+            } else {
+                data.forEach((process, index) => {
+                    if ( process[0] ) {
+                        done = false;
+                        if ( !runTime || runTime > process[0] || (runTime == process[0] && queue.indexOf(nowProcess) > queue.indexOf(index)) ) {
+                            nowProcess = index;
+                            runTime = process[0];
+                        }
+                    }
+                });
+            }
+        }
+
+        //  Exercise process
+        if ( nowProcess == -1 ) {
+            result.push( nowProcess+1 );
+            ++nowTime;
+        } else {
+            for ( let i = 0 ; i < runTime ; ++i ) {
+                result.push( nowProcess+1 );
+                ++nowTime;
+                if ( --data[nowProcess][0] == 0 ) {
+                    break;
+                }
+            }
+            nowProcess = -1;
+        }
+    }
+
+    return result;
 };
 
 const FCFS_RR = (type, data) => {
@@ -176,9 +238,9 @@ const dataFormat = programingData => {
 
 const schedule = (processType, programingData) => {
     var convertedData = dataFormat(programingData);
-    console.log("Converted Data:", convertedData);
+    // console.log("Converted Data:", convertedData);
     var resultData = scheduling(processType, convertedData);
-    console.log("Result Data:", resultData);
+    // console.log("Result Data:", resultData);
 
     return showResultData(convertedData.length, resultData);
 };
