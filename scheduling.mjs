@@ -56,7 +56,81 @@ const showResultData = (processNumber, result) => {
 };
 
 const PS_PPS = (type, data) => {
-    return [];
+    var result = [];
+
+    let checkPriority = (f,b) => {
+        if ( !f || !b ) {
+            return b - f;
+        }
+        return f - b;
+    };
+
+    // Set an arrive queue for check next prcess
+    var queue = data.map((e,i) => [i,e[1],e[2]]).sort((f,b) => checkPriority(f[2], b[2])).sort((f,b) => f[1]-b[1]).map(e => e[0]);
+    // console.log("Queue:", queue);
+    var queueWall = -1;
+
+     var nowProcess = -1;
+    var nowTime = 0;
+
+    var done = false;
+    while ( !done ) {
+        done = true;
+
+        var runTime = 0;
+        // Find next exercise process
+        if ( nowProcess == -1 ) {
+            var priority = 0;
+            if ( queueWall < queue.length-1 ) {
+                done = false;
+                // PS
+                queue.forEach((process_index, index) => {
+                    if ( data[process_index][1] <= nowTime ) {
+                        if ( index > queueWall ) {
+                            queueWall = index;
+                        }
+                        if ( data[process_index][0] && (!runTime || checkPriority(priority, data[process_index][2]) > 0 ) ) {
+                            priority = data[process_index][2];
+                            nowProcess = process_index;
+                            runTime = data[process_index][0];
+                        }
+                    }
+                });
+                // PPS
+                if ( type && queueWall != queue.length-1 ) {
+                    runTime = data[queue[queueWall+1]][1] - nowTime;
+                }
+            } else {
+                data.forEach((process, index) => {
+                    if ( process[0] ) {
+                        done = false;
+                        if ( !runTime || checkPriority(priority, process[2]) > 0 ) {
+                            priority = process[2];
+                            nowProcess = index;
+                            runTime = process[0];
+                        }
+                    }
+                });
+            }
+        }
+
+        //  Exercise process
+        if ( nowProcess == -1 ) {
+            result.push( nowProcess+1 );
+            ++nowTime;
+        } else {
+            for ( let i = 0 ; i < runTime ; ++i ) {
+                result.push( nowProcess+1 );
+                ++nowTime;
+                if ( --data[nowProcess][0] == 0 ) {
+                    break;
+                }
+            }
+            nowProcess = -1;
+        }
+    }
+
+    return result;
  };
 
 const SJF_SRTF = (type, data) => {
@@ -85,7 +159,7 @@ const SJF_SRTF = (type, data) => {
                         if ( index > queueWall ) {
                             queueWall = index;
                         }
-                        if ( data[process_index][0] && !runTime || runTime > data[process_index][0] ) {
+                        if ( data[process_index][0] && (!runTime || runTime > data[process_index][0]) ) {
                             nowProcess = process_index;
                             runTime = data[process_index][0];
                         }
