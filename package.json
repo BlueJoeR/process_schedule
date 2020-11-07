@@ -1,0 +1,12 @@
+{
+  "name": "process_schedule",
+  "version": "1.0.0",
+  "description": "Exercise process schedule",
+  "main": "index.mjs",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "process": "node --experimental-modules index.mjs"
+  },
+  "author": "BlueJoeR",
+  "license": "ISC"
+}
